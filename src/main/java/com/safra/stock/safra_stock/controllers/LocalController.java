@@ -1,0 +1,133 @@
+package com.safra.stock.safra_stock.controllers;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.safra.stock.safra_stock.entities.Local;
+import com.safra.stock.safra_stock.entities.LocalDTO;
+import com.safra.stock.safra_stock.entities.LocalUpdateDTO;
+import com.safra.stock.safra_stock.entities.User;
+import com.safra.stock.safra_stock.services.LocalService;
+import com.safra.stock.safra_stock.services.UserService;
+
+import jakarta.validation.Valid;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+@RestController
+@RequestMapping("/safra-stock/locales")
+public class LocalController {
+
+    @Autowired
+    private LocalService service;
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping
+    public List<LocalDTO> list() {
+        System.out.println("LLAMADA A LISTAR LOCALES");
+        return service.findAll().stream()
+                .map(local -> new LocalDTO(
+                        local.getId(),
+                        local.getName(),
+                        local.getWorkers().stream()
+                                .map(User::getName)
+                                .collect(Collectors.toList()),
+
+                        local.isActive()))
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable int id) {
+        System.out.println("OBTENIENDO LOCAL: " + id);
+        Optional<Local> localOptional = service.findById(id);
+        if (!localOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        Local local = localOptional.get();
+        LocalDTO localDTO = new LocalDTO(
+                local.getId(),
+                local.getName(),
+                local.getWorkers()
+                        .stream()
+                        .map(User::getName)
+                        .collect(Collectors.toList()),
+
+                local.isActive());
+        return ResponseEntity.ok().body(localDTO);
+    }
+
+    @PostMapping()
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> create(@Valid @RequestBody Local local, BindingResult result) {
+        if (result.hasFieldErrors()) {
+            return validation(result);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.save(local));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> edit(@Valid @RequestBody LocalUpdateDTO dto, @PathVariable int id) {
+        Optional<Local> optionalLocal = service.findById(id);
+        if (!optionalLocal.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        Local local = optionalLocal.get();
+        local.setName(dto.getName());
+
+        // actualizar workers desde workerIds (cargar Users y asignarlos)
+        List<User> workers = userService.findAllById(dto.getWorkerIds());
+        local.setWorkers(workers);
+
+        return ResponseEntity.ok().body(service.save(local));
+    }
+
+    @PutMapping("/disable/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> disable(@PathVariable int id) {
+        Optional<Local> localOptional = service.findById(id);
+        if (!localOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Local local = localOptional.get();
+        return ResponseEntity.ok().body(service.changeActive(local, false));
+    }
+
+    @PutMapping("/enable/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> enable(@PathVariable int id) {
+        Optional<Local> localOptional = service.findById(id);
+        if (!localOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Local local = localOptional.get();
+        return ResponseEntity.ok().body(service.changeActive(local, true));
+    }
+
+    public ResponseEntity<?> validation(BindingResult result) {
+        Map<String, String> errors = new HashMap<>();
+        result.getFieldErrors().forEach(err -> {
+            errors.put(err.getField(), "El campo " + err.getField() + " " + err.getDefaultMessage());
+        });
+        return ResponseEntity.badRequest().body(errors);
+    }
+}
