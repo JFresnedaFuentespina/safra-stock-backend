@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.safra.stock.safra_stock.entities.ProductStock;
+import com.safra.stock.safra_stock.entities.ProductStockDate;
 import com.safra.stock.safra_stock.services.ProductStockService;
 
 import jakarta.validation.Valid;
@@ -28,7 +29,7 @@ public class ProductStockController {
     private ProductStockService service;
 
     @GetMapping()
-    public List<ProductStock> list() {
+    public List<ProductStockDate> list() {
         return service.findAll();
     }
 
@@ -38,6 +39,14 @@ public class ProductStockController {
             return validation(result);
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(service.save(localStock));
+    }
+
+    @PostMapping("/batch")
+    public ResponseEntity<?> createBatch(@RequestBody List<@Valid ProductStock> stockList) {
+        List<ProductStock> saved = stockList.stream()
+                .map(service::save)
+                .toList();
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     public ResponseEntity<?> validation(BindingResult result) {

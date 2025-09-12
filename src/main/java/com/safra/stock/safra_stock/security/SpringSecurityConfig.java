@@ -88,6 +88,7 @@ public class SpringSecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/safra-stock/locales/*").permitAll()
                 .requestMatchers(HttpMethod.POST, "/safra-stock/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/safra-stock/stock").permitAll()
+                .requestMatchers(HttpMethod.POST, "/safra-stock/stock/batch").permitAll()
                 .requestMatchers(HttpMethod.GET, "/safra-stock/stock").permitAll()
                 .anyRequest().authenticated())
                 .addFilter(jwtAuthFilter)
@@ -101,7 +102,7 @@ public class SpringSecurityConfig {
     @Bean
     public CorsConfigurationSource configurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(Arrays.asList("*")); // ! CAMBIAR CUANDO ESTÉ EN PRODUCCIÓN POR LA IP LOCAL
+        config.setAllowedOriginPatterns(Arrays.asList("http://145.1.207.226:4200"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PUT"));
         config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
