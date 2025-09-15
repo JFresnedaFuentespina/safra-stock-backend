@@ -41,7 +41,6 @@ public class LocalController {
 
     @GetMapping
     public List<LocalDTO> list() {
-        System.out.println("LLAMADA A LISTAR LOCALES");
         return service.findAll().stream()
                 .map(local -> new LocalDTO(
                         local.getId(),
@@ -49,8 +48,8 @@ public class LocalController {
                         local.getWorkers().stream()
                                 .map(User::getName)
                                 .collect(Collectors.toList()),
-
-                        local.isActive()))
+                        local.isActive(),
+                        local.getStockMinPerProduct()))
                 .collect(Collectors.toList());
     }
 
@@ -69,8 +68,8 @@ public class LocalController {
                         .stream()
                         .map(User::getName)
                         .collect(Collectors.toList()),
-
-                local.isActive());
+                local.isActive(),
+                local.getStockMinPerProduct());
         return ResponseEntity.ok().body(localDTO);
     }
 

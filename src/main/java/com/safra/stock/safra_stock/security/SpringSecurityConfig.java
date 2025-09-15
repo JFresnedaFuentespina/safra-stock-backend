@@ -62,6 +62,7 @@ public class SpringSecurityConfig {
         JwtAuthenticationFilter jwtAuthFilter = new JwtAuthenticationFilter(authenticationManager(http));
         jwtAuthFilter.setFilterProcessesUrl("/safra-stock/login");
         return http.authorizeHttpRequests((authz) -> authz
+                .requestMatchers(HttpMethod.GET, "/favicon.ico").permitAll()
                 .requestMatchers(HttpMethod.GET, "/safra-stock/products").permitAll()
                 .requestMatchers(HttpMethod.GET, "/safra-stock/products/{id}").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/safra-stock/products/{id}").permitAll()

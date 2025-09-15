@@ -56,4 +56,11 @@ public class ProductStockDate {
         this.date = date;
     }
 
+    @Override
+    public String toString() {
+        return "ProductStockDate [id=" + id + ", date=" + date + ", productStock=" + productStock + "]";
+    }
+
+    
+
 }

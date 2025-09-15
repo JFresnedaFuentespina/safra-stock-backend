@@ -67,4 +67,9 @@ public class ProductStock {
         this.id = id;
     }
 
+    @Override
+    public String toString() {
+        return "ProductStock [id=" + id + ", productName=" + productName + ", localName=" + localName + ", stock="
+                + stock + ", date=" + date + "]";
+    }
 }

@@ -24,7 +24,9 @@ public class ProductStockServiceImpl implements ProductStockService {
 
     @Override
     public List<ProductStockDate> findAll() {
-        return (List<ProductStockDate>) this.stockDateRepository.findAll();
+        List<ProductStockDate> stock = (List<ProductStockDate>) this.stockDateRepository.findAll();
+        stock.forEach(s -> System.out.println("Stock: " + s));
+        return stock;
     }
 
     @Override
