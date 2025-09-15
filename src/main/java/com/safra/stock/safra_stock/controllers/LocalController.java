@@ -93,7 +93,10 @@ public class LocalController {
         Local local = optionalLocal.get();
         local.setName(dto.getName());
 
-        // actualizar workers desde workerIds (cargar Users y asignarlos)
+        // actualizar stock mínimo
+        local.setStockMinPerProduct(dto.getStockMinPerProduct());
+
+        // actualizar workers desde workerIds
         List<User> workers = userService.findAllById(dto.getWorkerIds());
         local.setWorkers(workers);
 
