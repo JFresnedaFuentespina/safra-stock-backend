@@ -91,6 +91,8 @@ public class SpringSecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/safra-stock/stock").permitAll()
                 .requestMatchers(HttpMethod.POST, "/safra-stock/stock/batch").permitAll()
                 .requestMatchers(HttpMethod.GET, "/safra-stock/stock").permitAll()
+                .requestMatchers(HttpMethod.GET, "/safra-stock/discarded").permitAll()
+                .requestMatchers(HttpMethod.POST, "/safra-stock/discarded").permitAll()
                 .anyRequest().authenticated())
                 .addFilter(jwtAuthFilter)
                 .addFilter(new JwtValidationFilter(authenticationManager(http)))

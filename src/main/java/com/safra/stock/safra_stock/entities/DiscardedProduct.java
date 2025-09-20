@@ -8,6 +8,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -19,23 +21,17 @@ public class DiscardedProduct {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @OneToMany(mappedBy = "disposal", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "discardedProduct", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DisposedProduct> products;
 
     private String reason;
-
     private LocalDate disposalDate;
 
-    public DiscardedProduct() {
-    }
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "local_id", nullable = false)
+    private Local local;
 
-    public DiscardedProduct(int id, List<DisposedProduct> products, String reason, LocalDate disposalDate) {
-        this.id = id;
-        this.products = products;
-        this.reason = reason;
-        this.disposalDate = disposalDate;
-    }
-
+    // Getters y setters
     public int getId() {
         return id;
     }
@@ -68,4 +64,11 @@ public class DiscardedProduct {
         this.disposalDate = disposalDate;
     }
 
+    public Local getLocal() {
+        return local;
+    }
+
+    public void setLocal(Local local) {
+        this.local = local;
+    }
 }

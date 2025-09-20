@@ -38,7 +38,6 @@ public class ProductController {
 
     @GetMapping
     public List<ProductDTO> list() {
-        System.out.println("INTENTO OBTENER PRODUCTOS!");
         List<Product> productos = productService.findAll();
         List<ProductDTO> productosDTO = new ArrayList<>();
         String base64Image = null;

@@ -1,5 +1,7 @@
 package com.safra.stock.safra_stock.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,30 +13,23 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "disposed_product")
 public class DisposedProduct {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "disposal_id", nullable = false)
+    @JsonIgnore
+    private DiscardedProduct discardedProduct;
 
     private int quantity;
 
-    @ManyToOne
-    @JoinColumn(name = "disposal_id")
-    private DiscardedProduct discardedProduct;
-
-    public DisposedProduct() {
-
-    }
-
-    public DisposedProduct(int id, Product product, int quantity) {
-        this.id = id;
-        this.product = product;
-        this.quantity = quantity;
-    }
-
+    // Getters y setters
     public int getId() {
         return id;
     }
@@ -51,14 +46,6 @@ public class DisposedProduct {
         this.product = product;
     }
 
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
     public DiscardedProduct getDiscardedProduct() {
         return discardedProduct;
     }
@@ -67,4 +54,11 @@ public class DisposedProduct {
         this.discardedProduct = discardedProduct;
     }
 
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 }

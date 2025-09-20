@@ -8,13 +8,16 @@ public class DiscardedProductDTO {
     private String reason;
     private List<DisposedProductDTO> products;
     private LocalDate disposalDate;
+    private int localId;
 
     public DiscardedProductDTO() {
     }
 
-    public DiscardedProductDTO(String reason, List<DisposedProductDTO> products, LocalDate disposalDate) {
+    public DiscardedProductDTO(String reason, List<DisposedProductDTO> products, LocalDate disposalDate, int localId) {
         this.reason = reason;
         this.products = products;
+        this.disposalDate = disposalDate;
+        this.localId = localId;
     }
 
     public String getReason() {
@@ -39,5 +42,13 @@ public class DiscardedProductDTO {
 
     public void setDisposalDate(LocalDate disposalDate) {
         this.disposalDate = disposalDate;
+    }
+
+    public int getLocalId() {
+        return localId;
+    }
+
+    public void setLocalId(int localId) {
+        this.localId = localId;
     }
 }

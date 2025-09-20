@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,8 +21,10 @@ import com.safra.stock.safra_stock.entities.DiscardedProduct;
 import com.safra.stock.safra_stock.entities.DiscardedProductDTO;
 import com.safra.stock.safra_stock.entities.DisposedProduct;
 import com.safra.stock.safra_stock.entities.DisposedProductDTO;
+import com.safra.stock.safra_stock.entities.Local;
 import com.safra.stock.safra_stock.entities.Product;
 import com.safra.stock.safra_stock.services.DiscardedProductService;
+import com.safra.stock.safra_stock.services.LocalService;
 import com.safra.stock.safra_stock.services.ProductService;
 
 import jakarta.validation.Valid;
@@ -35,6 +38,9 @@ public class DiscardedProductController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private LocalService localService;
 
     @GetMapping()
     public List<DiscardedProduct> list() {
@@ -50,11 +56,23 @@ public class DiscardedProductController {
         // Crear la entidad principal
         DiscardedProduct discardedProduct = new DiscardedProduct();
         discardedProduct.setReason(dto.getReason());
+        discardedProduct.setDisposalDate(dto.getDisposalDate());
 
+        // Buscar el local si viene informado
+        if (dto.getLocalId() >= 0) {
+            Optional<Local> optionalLocal = localService.findById(dto.getLocalId());
+            if (optionalLocal.isPresent()) {
+                discardedProduct.setLocal(optionalLocal.get());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Local con id " + dto.getLocalId() + " no encontrado");
+            }
+        }
+
+        // Procesar los productos descartados
         List<DisposedProduct> disposedProducts = new ArrayList<>();
 
         for (DisposedProductDTO dpDTO : dto.getProducts()) {
-            // Buscar el producto original en BBDD
             Optional<Product> optionalProduct = productService.findById(dpDTO.getProductId());
             if (!optionalProduct.isPresent()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -63,7 +81,6 @@ public class DiscardedProductController {
 
             Product product = optionalProduct.get();
 
-            // Crear el DisposedProduct
             DisposedProduct disposedProduct = new DisposedProduct();
             disposedProduct.setProduct(product);
             disposedProduct.setQuantity(dpDTO.getQuantity());
@@ -77,7 +94,11 @@ public class DiscardedProductController {
         // Guardar en la base de datos
         discardedProductService.save(discardedProduct);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(discardedProduct);
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.TEXT_PLAIN)
+                .body("Descarte guardado correctamente");
+
     }
 
     public ResponseEntity<?> validation(BindingResult result) {
