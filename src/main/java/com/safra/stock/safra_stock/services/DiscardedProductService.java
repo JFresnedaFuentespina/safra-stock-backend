@@ -13,5 +13,7 @@ public interface DiscardedProductService {
 
     public DiscardedProduct save(DiscardedProduct discardedProduct);
 
+    public boolean setActive(int id, boolean active);
+
 
 }

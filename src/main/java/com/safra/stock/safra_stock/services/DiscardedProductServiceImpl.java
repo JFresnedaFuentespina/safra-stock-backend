@@ -33,4 +33,18 @@ public class DiscardedProductServiceImpl implements DiscardedProductService {
     public Optional<DiscardedProduct> findById(int id) {
         return discardedProductRepository.findById(id);
     }
+
+    @Override
+    public boolean setActive(int id, boolean active) {
+        Optional<DiscardedProduct> optional = discardedProductRepository.findById(id);
+        if (!optional.isPresent()) {
+            return false;
+        }
+        DiscardedProduct discardedProduct = optional.get();
+        discardedProduct.setActive(active);
+        discardedProductRepository.save(discardedProduct);
+        return true;
+    }
+
+    
 }

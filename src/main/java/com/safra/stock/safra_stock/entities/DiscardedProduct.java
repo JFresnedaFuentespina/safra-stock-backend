@@ -31,6 +31,8 @@ public class DiscardedProduct {
     @JoinColumn(name = "local_id", nullable = false)
     private Local local;
 
+    private boolean active;
+
     // Getters y setters
     public int getId() {
         return id;
@@ -70,5 +72,13 @@ public class DiscardedProduct {
 
     public void setLocal(Local local) {
         this.local = local;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }
