@@ -9,18 +9,22 @@ public class LocalDTO {
     private List<String> workerNames;
     private boolean active;
     private int stockMinPerProduct;
+    private List<String> types;
 
-    public LocalDTO(int id, String name, List<String> workerNames, boolean active, int stockMinPerProduct) {
+    public LocalDTO(int id, String name, List<String> workerNames, boolean active, int stockMinPerProduct,
+            List<String> types) {
         this.id = id;
         this.name = name;
         this.workerNames = workerNames;
         this.active = active;
         this.stockMinPerProduct = stockMinPerProduct;
+        this.types = types;
     }
 
     public LocalDTO() {
         this.name = "";
         this.workerNames = new ArrayList<>();
+        this.types = new ArrayList<>();
     }
 
     public int getId() {
@@ -61,6 +65,14 @@ public class LocalDTO {
 
     public void setStockMinPerProduct(int stockMinPerProduct) {
         this.stockMinPerProduct = stockMinPerProduct;
+    }
+
+    public List<String> getTypes() {
+        return types;
+    }
+
+    public void setTypes(List<String> types) {
+        this.types = types;
     }
 
 }

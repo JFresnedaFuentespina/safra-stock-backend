@@ -15,9 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.safra.stock.safra_stock.entities.Local;
+import com.safra.stock.safra_stock.entities.LocalCreateDTO;
 import com.safra.stock.safra_stock.entities.LocalDTO;
+import com.safra.stock.safra_stock.entities.LocalType;
 import com.safra.stock.safra_stock.entities.LocalUpdateDTO;
 import com.safra.stock.safra_stock.entities.User;
+import com.safra.stock.safra_stock.repositories.LocalTypeRepository;
 import com.safra.stock.safra_stock.services.LocalService;
 import com.safra.stock.safra_stock.services.UserService;
 
@@ -39,6 +42,9 @@ public class LocalController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    LocalTypeRepository localTypeRepository;
+
     @GetMapping
     public List<LocalDTO> list() {
         return service.findAll().stream()
@@ -49,7 +55,10 @@ public class LocalController {
                                 .map(User::getName)
                                 .collect(Collectors.toList()),
                         local.isActive(),
-                        local.getStockMinPerProduct()))
+                        local.getStockMinPerProduct(),
+                        local.getTypes().stream()
+                                .map(LocalType::getName)
+                                .collect(Collectors.toList())))
                 .collect(Collectors.toList());
     }
 
@@ -60,26 +69,41 @@ public class LocalController {
         if (!localOptional.isPresent()) {
             return ResponseEntity.notFound().build();
         }
+
         Local local = localOptional.get();
         LocalDTO localDTO = new LocalDTO(
                 local.getId(),
                 local.getName(),
-                local.getWorkers()
-                        .stream()
+                local.getWorkers().stream()
                         .map(User::getName)
                         .collect(Collectors.toList()),
                 local.isActive(),
-                local.getStockMinPerProduct());
+                local.getStockMinPerProduct(),
+                local.getTypes().stream()
+                        .map(LocalType::getName)
+                        .collect(Collectors.toList()));
+
         return ResponseEntity.ok().body(localDTO);
     }
 
-    @PostMapping()
+    @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> create(@Valid @RequestBody Local local, BindingResult result) {
-        if (result.hasFieldErrors()) {
-            return validation(result);
-        }
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.save(local));
+    public ResponseEntity<?> create(@RequestBody LocalCreateDTO dto) {
+        Local local = new Local();
+        local.setName(dto.getName());
+        local.setActive(true);
+        local.setStockMinPerProduct(dto.getStockMinPerProduct());
+
+        // Buscar entidades User por ID
+        List<User> users = userService.findAllById(dto.getWorkers());
+        local.setWorkers(users);
+
+        // Buscar entidades LocalType por nombre
+        List<LocalType> types = localTypeRepository.findByNameIn(dto.getTypes());
+        local.setTypes(types);
+
+        Local saved = service.save(local);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{id}")
@@ -99,6 +123,10 @@ public class LocalController {
         // actualizar workers desde workerIds
         List<User> workers = userService.findAllById(dto.getWorkerIds());
         local.setWorkers(workers);
+
+        // actualizar types
+        List<LocalType> types = localTypeRepository.findByNameIn(dto.getTypes());
+        local.setTypes(types);
 
         return ResponseEntity.ok().body(service.save(local));
     }

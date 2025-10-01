@@ -31,6 +31,10 @@ public class Local {
     @Column(name = "stock_min_per_product")
     private int stockMinPerProduct;
 
+    @ManyToMany
+    @JoinTable(name = "local_tipo_local", joinColumns = @JoinColumn(name = "local_id"), inverseJoinColumns = @JoinColumn(name = "tipo_local_id"))
+    private List<LocalType> types;
+
     public int getStockMinPerProduct() {
         return stockMinPerProduct;
     }
@@ -71,4 +75,11 @@ public class Local {
         this.active = active;
     }
 
+    public List<LocalType> getTypes() {
+        return types;
+    }
+
+    public void setTypes(List<LocalType> types) {
+        this.types = types;
+    }
 }
