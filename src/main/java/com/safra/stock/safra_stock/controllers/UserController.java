@@ -65,6 +65,18 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("El usuario no existe.");
     }
 
+    @GetMapping("/{username}/locales")
+    public ResponseEntity<?> getLocalesForUser(@PathVariable String username) {
+        Optional<User> optionalUser = service.findByName(username);
+        if (!optionalUser.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No se encontró el usuario con nombre: " + username);
+        }
+
+        User user = optionalUser.get();
+        return ResponseEntity.ok(user.getLocales());
+    }
+
     @PostMapping()
     @PreAuthorize("hasRole('ADMIN') or #user.id == 0")
     public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult result) {
