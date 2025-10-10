@@ -1,9 +1,12 @@
 package com.safra.stock.safra_stock.entities;
 
+import java.time.LocalDate;
+
 public class ProductItem {
     private String localName;
     private String productName;
-    private int stock;
+    private int quantity;
+    private LocalDate date;
 
     // Getters y setters
     public String getLocalName() {
@@ -22,11 +25,19 @@ public class ProductItem {
         this.productName = productName;
     }
 
-    public int getStock() {
-        return stock;
+    public int getQuantity() {
+        return quantity;
     }
 
-    public void setStock(int stock) {
-        this.stock = stock;
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 }

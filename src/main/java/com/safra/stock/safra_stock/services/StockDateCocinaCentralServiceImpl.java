@@ -1,7 +1,6 @@
 package com.safra.stock.safra_stock.services;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,10 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.safra.stock.safra_stock.entities.CocinaCentralStockRequest;
+import com.safra.stock.safra_stock.entities.Product;
 import com.safra.stock.safra_stock.entities.ProductItem;
 import com.safra.stock.safra_stock.entities.ProductsCocinaCentral;
 import com.safra.stock.safra_stock.entities.StockDateCocinaCentral;
-import com.safra.stock.safra_stock.entities.StockDateCocinaCentralId;
+import com.safra.stock.safra_stock.repositories.ProductRepository;
 import com.safra.stock.safra_stock.repositories.ProductsCocinaCentralRepository;
 import com.safra.stock.safra_stock.repositories.StockDateCocinaCentralRepository;
 
@@ -24,7 +24,10 @@ public class StockDateCocinaCentralServiceImpl implements StockDateCocinaCentral
     private StockDateCocinaCentralRepository stockDateRepo;
 
     @Autowired
-    private ProductsCocinaCentralRepository productsRepo;
+    private ProductsCocinaCentralRepository productsCocinaRepo;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     public StockDateCocinaCentralServiceImpl(StockDateCocinaCentralRepository stockDateRepo) {
         this.stockDateRepo = stockDateRepo;
@@ -36,7 +39,7 @@ public class StockDateCocinaCentralServiceImpl implements StockDateCocinaCentral
     }
 
     @Override
-    public Optional<StockDateCocinaCentral> findById(StockDateCocinaCentralId id) {
+    public Optional<StockDateCocinaCentral> findById(int id) {
         return stockDateRepo.findById(id);
     }
 
@@ -50,32 +53,45 @@ public class StockDateCocinaCentralServiceImpl implements StockDateCocinaCentral
         return stockDateRepo.findByDate(date);
     }
 
-    @Override
-    public Optional<StockDateCocinaCentral> findByStockIdAndProductLocalId(Integer stockId, Integer productLocalId) {
-        return stockDateRepo.findByStockIdAndProductLocalId(stockId, productLocalId);
-    }
 
     @Override
     @Transactional
     public void createNewStockWithProducts(CocinaCentralStockRequest request) {
 
-        // Guardar cada producto en products_cocina_central
         for (ProductItem item : request.getProducts()) {
-            ProductsCocinaCentral product = new ProductsCocinaCentral();
-            product.setLocalName(item.getLocalName());
-            product.setProductName(item.getProductName());
-            product.setStock(item.getStock());
-            product.setDate(LocalDateTime.now());
 
-            productsRepo.save(product);
+            // 1️⃣ Buscar el producto en la tabla "product"
+            Product productEntity = productRepository.findByName(item.getProductName())
+                    .orElseGet(() -> {
+                        // Si no existe, crear uno nuevo
+                        Product newProduct = new Product();
+                        newProduct.setName(item.getProductName());
+                        return productRepository.save(newProduct);
+                    });
 
-            // Crear relación en stock_date_cocina_central
+            // 2️⃣ Crear el registro en products_cocina_central
+            ProductsCocinaCentral productStock = new ProductsCocinaCentral();
+            productStock.setLocalName(item.getLocalName() != null ? item.getLocalName() : "Cocina Central");
+            productStock.setProduct(productEntity); // relación correcta
+            productStock.setStock(item.getQuantity());
+            productStock.setDate(item.getDate() != null
+                    ? item.getDate().atStartOfDay()
+                    : (request.getDate() != null ? request.getDate().atStartOfDay() : LocalDate.now().atStartOfDay()));
+
+            productsCocinaRepo.save(productStock); // guarda y genera id autoincremental
+
+            // 3️⃣ Crear la relación en stock_date_cocina_central
             StockDateCocinaCentral relation = new StockDateCocinaCentral();
-            relation.setStockId(product.getId());
-            relation.setProductLocalId(product.getId());
-            relation.setDate(request.getDate());
+            relation.setProduct(productStock); // mapea la FK al product creado
+            relation.setDate(LocalDate.now());
 
             stockDateRepo.save(relation);
         }
     }
+
+    @Override
+    public List<StockDateCocinaCentral> findAllWithProducts() {
+        return stockDateRepo.findAllWithProducts();
+    }
+
 }

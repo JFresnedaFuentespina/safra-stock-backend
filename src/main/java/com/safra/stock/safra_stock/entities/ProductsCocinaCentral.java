@@ -7,11 +7,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "products_cocina_central")
 public class ProductsCocinaCentral {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -19,11 +22,12 @@ public class ProductsCocinaCentral {
     @Column(name = "date")
     private LocalDateTime date;
 
-    @Column(name = "local_name")
-    private String localName;
+    @Column(name = "local_name", nullable = true)
+    private String localName = "Cocina Central";
 
-    @Column(name = "product_name")
-    private String productName;
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product; // Esta es la relación con la tabla de productos
 
     @Column(name = "stock", nullable = false)
     private int stock;
@@ -31,11 +35,11 @@ public class ProductsCocinaCentral {
     public ProductsCocinaCentral() {
     }
 
-    public ProductsCocinaCentral(Integer id, LocalDateTime date, String localName, String productName, int stock) {
+    public ProductsCocinaCentral(Integer id, LocalDateTime date, String localName, Product product, int stock) {
         this.id = id;
         this.date = date;
         this.localName = localName;
-        this.productName = productName;
+        this.product = product;
         this.stock = stock;
     }
 
@@ -63,12 +67,12 @@ public class ProductsCocinaCentral {
         this.localName = localName;
     }
 
-    public String getProductName() {
-        return productName;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public int getStock() {
@@ -78,5 +82,4 @@ public class ProductsCocinaCentral {
     public void setStock(int stock) {
         this.stock = stock;
     }
-
 }
