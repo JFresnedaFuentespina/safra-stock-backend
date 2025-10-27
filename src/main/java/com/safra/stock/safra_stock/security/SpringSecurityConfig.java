@@ -96,6 +96,7 @@ public class SpringSecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/safra-stock/discarded/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/safra-stock/discarded").permitAll()
                 .requestMatchers(HttpMethod.GET, "/safra-stock/cocina-central/stock").permitAll()
+                .requestMatchers(HttpMethod.GET, "/safra-stock/cocina-central/last-stock").permitAll()
                 .requestMatchers(HttpMethod.POST, "/safra-stock/cocina-central/stock").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/safra-stock/cocina-central/**").permitAll()
                 .anyRequest().authenticated())

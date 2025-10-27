@@ -26,4 +26,6 @@ public interface StockDateCocinaCentralService {
             "JOIN FETCH p.product prod")
     List<StockDateCocinaCentral> findAllWithProducts();
 
+    List<StockDateCocinaCentral> findLastStock();
+
 }

@@ -13,7 +13,21 @@ public class StockCocinaGroupedDTO {
         this.products = products;
     }
 
-    public String getDate() { return date; }
-    public String getLocalName() { return localName; }
-    public List<ProductStockCocinaDTO> getProducts() { return products; }
+    public String getDate() {
+        return date;
+    }
+
+    public String getLocalName() {
+        return localName;
+    }
+
+    public List<ProductStockCocinaDTO> getProducts() {
+        return products;
+    }
+
+    @Override
+    public String toString() {
+        return "StockCocinaGroupedDTO [date=" + date + ", localName=" + localName + ", products=" + products + "]";
+    }
+
 }

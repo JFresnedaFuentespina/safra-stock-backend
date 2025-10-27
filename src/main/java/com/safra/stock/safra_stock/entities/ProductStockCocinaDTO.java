@@ -23,4 +23,11 @@ public class ProductStockCocinaDTO {
     public String getProductDate() {
         return productDate;
     }
+
+    @Override
+    public String toString() {
+        return "ProductStockCocinaDTO [productName=" + productName + ", stock=" + stock + ", productDate=" + productDate
+                + "]";
+    }
+
 }

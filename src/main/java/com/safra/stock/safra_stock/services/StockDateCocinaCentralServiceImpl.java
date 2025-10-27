@@ -53,36 +53,30 @@ public class StockDateCocinaCentralServiceImpl implements StockDateCocinaCentral
         return stockDateRepo.findByDate(date);
     }
 
-
     @Override
     @Transactional
     public void createNewStockWithProducts(CocinaCentralStockRequest request) {
-
         for (ProductItem item : request.getProducts()) {
 
-            // 1️⃣ Buscar el producto en la tabla "product"
             Product productEntity = productRepository.findByName(item.getProductName())
                     .orElseGet(() -> {
-                        // Si no existe, crear uno nuevo
                         Product newProduct = new Product();
                         newProduct.setName(item.getProductName());
                         return productRepository.save(newProduct);
                     });
 
-            // 2️⃣ Crear el registro en products_cocina_central
             ProductsCocinaCentral productStock = new ProductsCocinaCentral();
             productStock.setLocalName(item.getLocalName() != null ? item.getLocalName() : "Cocina Central");
-            productStock.setProduct(productEntity); // relación correcta
+            productStock.setProduct(productEntity);
             productStock.setStock(item.getQuantity());
             productStock.setDate(item.getDate() != null
                     ? item.getDate().atStartOfDay()
                     : (request.getDate() != null ? request.getDate().atStartOfDay() : LocalDate.now().atStartOfDay()));
 
-            productsCocinaRepo.save(productStock); // guarda y genera id autoincremental
+            productsCocinaRepo.save(productStock);
 
-            // 3️⃣ Crear la relación en stock_date_cocina_central
             StockDateCocinaCentral relation = new StockDateCocinaCentral();
-            relation.setProduct(productStock); // mapea la FK al product creado
+            relation.setProduct(productStock);
             relation.setDate(LocalDate.now());
 
             stockDateRepo.save(relation);
@@ -92,6 +86,19 @@ public class StockDateCocinaCentralServiceImpl implements StockDateCocinaCentral
     @Override
     public List<StockDateCocinaCentral> findAllWithProducts() {
         return stockDateRepo.findAllWithProducts();
+    }
+
+    @Override
+    public List<StockDateCocinaCentral> findLastStock() {
+        StockDateCocinaCentral lastStockEntry = stockDateRepo.findTopByOrderByDateDesc();
+
+        if (lastStockEntry == null) {
+            return List.of();
+        }
+
+        LocalDate lastDate = lastStockEntry.getDate();
+
+        return stockDateRepo.findByDate(lastDate);
     }
 
 }

@@ -19,4 +19,6 @@ public interface StockDateCocinaCentralRepository
 
     @Query("SELECT s FROM StockDateCocinaCentral s JOIN FETCH s.product p JOIN FETCH p.product")
     List<StockDateCocinaCentral> findAllWithProducts();
+
+    StockDateCocinaCentral findTopByOrderByDateDesc();
 }
