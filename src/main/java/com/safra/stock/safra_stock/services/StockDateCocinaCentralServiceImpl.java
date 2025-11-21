@@ -2,7 +2,9 @@ package com.safra.stock.safra_stock.services;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -99,6 +101,71 @@ public class StockDateCocinaCentralServiceImpl implements StockDateCocinaCentral
         LocalDate lastDate = lastStockEntry.getDate();
 
         return stockDateRepo.findByDate(lastDate);
+    }
+
+    @Override
+    @Transactional
+    public void updateLastStockWithProducts(List<ProductItem> products) {
+
+        // 1. Obtener el último registro de stockDate
+        StockDateCocinaCentral lastStockEntry = stockDateRepo.findTopByOrderByDateDesc();
+
+        if (lastStockEntry == null) {
+            throw new RuntimeException("No existe ningún stock registrado.");
+        }
+
+        LocalDate lastDate = lastStockEntry.getDate();
+
+        // 2. Obtener todos los registros del último día
+        List<StockDateCocinaCentral> lastStockList = stockDateRepo.findByDate(lastDate);
+
+        // 3. Crear un mapa por nombre de producto para acceso rápido
+        // Agrupar por nombre pero guardando todos los registros
+        Map<String, List<StockDateCocinaCentral>> stockMap = lastStockList.stream()
+                .collect(Collectors.groupingBy(
+                        s -> s.getProduct().getProduct().getName().trim().toLowerCase()));
+
+        // Procesar productos recibidos
+        for (ProductItem item : products) {
+
+            String key = item.getProductName().trim().toLowerCase();
+            int quantityToSubtract = item.getQuantity();
+
+            if (!stockMap.containsKey(key))
+                continue;
+
+            // Obtener todos los registros de ese producto
+            List<StockDateCocinaCentral> stockEntries = stockMap.get(key);
+
+            // Filtrar SOLO los que coinciden con la fecha
+            LocalDate targetDate = item.getDate();
+
+            List<ProductsCocinaCentral> matchingStocks = stockEntries.stream()
+                    .map(StockDateCocinaCentral::getProduct)
+                    .filter(p -> p.getDate().toLocalDate().isEqual(targetDate))
+                    .toList();
+
+            // Restar cantidades en orden
+            for (ProductsCocinaCentral productStock : matchingStocks) {
+
+                if (quantityToSubtract <= 0)
+                    break;
+
+                int available = productStock.getStock();
+                int subtract = Math.min(available, quantityToSubtract);
+
+                productStock.setStock(available - subtract);
+                productsCocinaRepo.save(productStock);
+
+                quantityToSubtract -= subtract;
+            }
+        }
+
+        System.out.println("ACTUALIZACIÓN ÚLTIMO STOCK!");
+        lastStockList.forEach(item -> System.out.println(" - " + item));
+
+        // 5. Guardar relaciones StockDate (por si cambió algo)
+        stockDateRepo.saveAll(lastStockList);
     }
 
 }

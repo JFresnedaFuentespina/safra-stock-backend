@@ -40,4 +40,10 @@ public class ProductItem {
     public void setDate(LocalDate date) {
         this.date = date;
     }
+
+    @Override
+    public String toString() {
+        return "ProductItem [localName=" + localName + ", productName=" + productName + ", quantity=" + quantity
+                + ", date=" + date + "]";
+    }
 }

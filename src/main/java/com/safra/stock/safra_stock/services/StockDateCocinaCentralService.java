@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.Query;
 
 import com.safra.stock.safra_stock.entities.CocinaCentralStockRequest;
+import com.safra.stock.safra_stock.entities.ProductItem;
 import com.safra.stock.safra_stock.entities.StockDateCocinaCentral;
 
 public interface StockDateCocinaCentralService {
@@ -27,5 +28,7 @@ public interface StockDateCocinaCentralService {
     List<StockDateCocinaCentral> findAllWithProducts();
 
     List<StockDateCocinaCentral> findLastStock();
+
+    void updateLastStockWithProducts(List<ProductItem> products);
 
 }

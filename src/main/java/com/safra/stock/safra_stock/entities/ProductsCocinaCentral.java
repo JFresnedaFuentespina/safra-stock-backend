@@ -82,4 +82,11 @@ public class ProductsCocinaCentral {
     public void setStock(int stock) {
         this.stock = stock;
     }
+
+    @Override
+    public String toString() {
+        return "ProductsCocinaCentral [id=" + id + ", date=" + date + ", localName=" + localName + ", product="
+                + product + ", stock=" + stock + "]";
+    }
+
 }

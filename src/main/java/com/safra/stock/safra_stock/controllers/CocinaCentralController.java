@@ -16,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.safra.stock.safra_stock.entities.CocinaCentralStockRequest;
+import com.safra.stock.safra_stock.entities.ProductItem;
 import com.safra.stock.safra_stock.entities.ProductStockCocinaDTO;
 import com.safra.stock.safra_stock.entities.ProductsCocinaCentral;
 import com.safra.stock.safra_stock.entities.StockCocinaGroupedDTO;
@@ -155,4 +157,20 @@ public class CocinaCentralController {
         });
         return ResponseEntity.badRequest().body(errors);
     }
+
+    @PutMapping("/stock/update-last")
+    public ResponseEntity<?> editLastStock(@RequestBody List<ProductItem> request) {
+        try {
+            System.out.println("ACTUALIZACIÓN ÚLTIMO STOCK!");
+            request.forEach(item -> System.out.println(" - " + item));
+            stockDateService.updateLastStockWithProducts(request);
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al modificar el último stock: " + e.getMessage());
+        }
+    }
+
 }
