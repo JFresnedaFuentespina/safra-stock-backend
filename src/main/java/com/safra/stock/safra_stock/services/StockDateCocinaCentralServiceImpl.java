@@ -1,6 +1,7 @@
 package com.safra.stock.safra_stock.services;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -11,10 +12,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.safra.stock.safra_stock.entities.CocinaCentralStockRequest;
+import com.safra.stock.safra_stock.entities.Order;
+import com.safra.stock.safra_stock.entities.OrderShipment;
+import com.safra.stock.safra_stock.entities.OrderShipmentProduct;
 import com.safra.stock.safra_stock.entities.Product;
 import com.safra.stock.safra_stock.entities.ProductItem;
 import com.safra.stock.safra_stock.entities.ProductsCocinaCentral;
 import com.safra.stock.safra_stock.entities.StockDateCocinaCentral;
+import com.safra.stock.safra_stock.repositories.OrderRepository;
+import com.safra.stock.safra_stock.repositories.OrderShipmentRepository;
 import com.safra.stock.safra_stock.repositories.ProductRepository;
 import com.safra.stock.safra_stock.repositories.ProductsCocinaCentralRepository;
 import com.safra.stock.safra_stock.repositories.StockDateCocinaCentralRepository;
@@ -30,6 +36,12 @@ public class StockDateCocinaCentralServiceImpl implements StockDateCocinaCentral
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderShipmentRepository orderShipmentRepository;
 
     public StockDateCocinaCentralServiceImpl(StockDateCocinaCentralRepository stockDateRepo) {
         this.stockDateRepo = stockDateRepo;
@@ -221,6 +233,44 @@ public class StockDateCocinaCentralServiceImpl implements StockDateCocinaCentral
         }
 
         System.out.println("NUEVO STOCK GENERADO PARA FECHA: " + today);
+    }
+
+    @Transactional
+    public void registerOrderShipment(List<ProductItem> items) {
+
+        if (items.isEmpty())
+            return;
+
+        Integer orderId = items.get(0).getOrderId();
+        if (orderId == null || orderId == 0) {
+            throw new RuntimeException("orderId inválido en payload");
+        }
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado: " + orderId));
+
+        OrderShipment shipment = new OrderShipment();
+        shipment.setOrder(order);
+        shipment.setShipmentDate(LocalDateTime.now());
+
+        List<OrderShipmentProduct> products = items.stream()
+                .map(item -> {
+                    Product product = productRepository.findByName(item.getProductName())
+                            .orElseThrow(
+                                    () -> new RuntimeException("Producto no encontrado: " + item.getProductName()));
+
+                    OrderShipmentProduct p = new OrderShipmentProduct();
+                    p.setProduct(product);
+                    p.setQuantity(item.getQuantity());
+                    p.setStockDate(item.getDate());
+                    p.setShipment(shipment);
+                    return p;
+                })
+                .toList();
+
+        shipment.setProducts(products);
+
+        orderShipmentRepository.save(shipment);
     }
 
 }

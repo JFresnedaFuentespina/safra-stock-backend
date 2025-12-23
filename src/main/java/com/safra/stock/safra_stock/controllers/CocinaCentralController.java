@@ -161,32 +161,40 @@ public class CocinaCentralController {
     @PutMapping("/stock/update-last")
     public ResponseEntity<?> editLastStock(@RequestBody List<ProductItem> request) {
         try {
-            System.out.println("ACTUALIZACIÓN ÚLTIMO STOCK!");
-            request.forEach(item -> System.out.println(" - " + item));
+            System.out.println("ACTUALIZACIÓN ÚLTIMO STOCK + REGISTRO ENVÍO");
+
+            // 1️⃣ Actualizar stock
             stockDateService.updateLastStockWithProducts(request);
+
+            // 2️⃣ Registrar envío
+            stockDateService.registerOrderShipment(request);
+
             return ResponseEntity.ok().build();
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al modificar el último stock: " + e.getMessage());
+                    .body("Error al modificar stock y registrar envío: " + e.getMessage());
         }
     }
 
     @PostMapping("/stock/generate-with-last")
     public ResponseEntity<?> generateWithLast(@RequestBody List<ProductItem> request) {
         try {
-            System.out.println("GENERANDO NUEVO STOCK A PARTIR DEL ÚLTIMO");
-            request.forEach(item -> System.out.println(" - " + item));
+            System.out.println("GENERANDO NUEVO STOCK + REGISTRO ENVÍO");
 
+            // 1️⃣ Generar stock
             stockDateService.generateNewStockFromLast(request);
+
+            // 2️⃣ Registrar envío
+            stockDateService.registerOrderShipment(request);
 
             return ResponseEntity.ok().build();
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al generar nuevo stock: " + e.getMessage());
+                    .body("Error al generar stock y registrar envío: " + e.getMessage());
         }
     }
 

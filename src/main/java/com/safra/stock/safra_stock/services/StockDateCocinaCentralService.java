@@ -33,4 +33,6 @@ public interface StockDateCocinaCentralService {
 
     void generateNewStockFromLast(List<ProductItem> products);
 
+    void registerOrderShipment(List<ProductItem> request);
+
 }

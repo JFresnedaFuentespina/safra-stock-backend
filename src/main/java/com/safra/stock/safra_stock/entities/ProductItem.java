@@ -7,8 +7,10 @@ public class ProductItem {
     private String productName;
     private int quantity;
     private LocalDate date;
+    private Integer orderId;
 
     // Getters y setters
+
     public String getLocalName() {
         return localName;
     }
@@ -45,5 +47,13 @@ public class ProductItem {
     public String toString() {
         return "ProductItem [localName=" + localName + ", productName=" + productName + ", quantity=" + quantity
                 + ", date=" + date + "]";
+    }
+
+    public Integer getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Integer orderId) {
+        this.orderId = orderId;
     }
 }

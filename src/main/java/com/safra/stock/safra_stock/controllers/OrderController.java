@@ -250,6 +250,16 @@ public class OrderController {
         return ResponseEntity.ok().body(service.changeActive(order, true));
     }
 
+    // @GetMapping("/get-pending-products/{id}")
+    // public ResponseEntity<?> getPendingProductsInOrder(@PathVariable int id) {
+    //     Optional<Order> orderOptional = service.findById(id);
+    //     if(!orderOptional.isPresent()){
+    //         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    //     }
+    //     Order order = orderOptional.get();
+
+    // }
+
     public ResponseEntity<?> validation(BindingResult result) {
         Map<String, String> errors = new HashMap<>();
         result.getFieldErrors().forEach(err -> {
