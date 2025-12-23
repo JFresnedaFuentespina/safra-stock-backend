@@ -31,4 +31,6 @@ public interface StockDateCocinaCentralService {
 
     void updateLastStockWithProducts(List<ProductItem> products);
 
+    void generateNewStockFromLast(List<ProductItem> products);
+
 }

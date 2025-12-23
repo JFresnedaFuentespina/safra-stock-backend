@@ -173,4 +173,21 @@ public class CocinaCentralController {
         }
     }
 
+    @PostMapping("/stock/generate-with-last")
+    public ResponseEntity<?> generateWithLast(@RequestBody List<ProductItem> request) {
+        try {
+            System.out.println("GENERANDO NUEVO STOCK A PARTIR DEL ÚLTIMO");
+            request.forEach(item -> System.out.println(" - " + item));
+
+            stockDateService.generateNewStockFromLast(request);
+
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al generar nuevo stock: " + e.getMessage());
+        }
+    }
+
 }

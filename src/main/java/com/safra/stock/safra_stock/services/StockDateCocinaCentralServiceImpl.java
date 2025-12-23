@@ -168,4 +168,59 @@ public class StockDateCocinaCentralServiceImpl implements StockDateCocinaCentral
         stockDateRepo.saveAll(lastStockList);
     }
 
+    @Override
+    @Transactional
+    public void generateNewStockFromLast(List<ProductItem> products) {
+        // Obtener último stock
+        StockDateCocinaCentral lastStockEntry = stockDateRepo.findTopByOrderByDateDesc();
+        if (lastStockEntry == null) {
+            throw new RuntimeException("No existe stock previo");
+        }
+
+        LocalDate lasDate = lastStockEntry.getDate();
+        List<StockDateCocinaCentral> lastStockList = stockDateRepo.findByDate(lasDate);
+
+        LocalDate today = LocalDate.now();
+
+        // Clonar productos del último stock
+        Map<String, ProductsCocinaCentral> newStockMap = lastStockList.stream()
+                .map(StockDateCocinaCentral::getProduct)
+                .collect(Collectors.toMap(
+                        p -> p.getProduct().getName().trim().toLowerCase(),
+                        p -> {
+                            ProductsCocinaCentral copy = new ProductsCocinaCentral();
+                            copy.setLocalName(p.getLocalName());
+                            copy.setProduct(p.getProduct());
+                            copy.setStock(p.getStock());
+                            copy.setDate(today.atStartOfDay());
+                            return productsCocinaRepo.save(copy);
+                        }));
+        // Aplicar restas sobre el nuevo stock
+        for (ProductItem item : products) {
+            String key = item.getProductName().trim().toLowerCase();
+            int quantityToSubtract = item.getQuantity();
+
+            if (!newStockMap.containsKey(key))
+                continue;
+
+            ProductsCocinaCentral productStock = newStockMap.get(key);
+
+            int available = productStock.getStock();
+            int subtract = Math.min(available, quantityToSubtract);
+
+            productStock.setStock(available - subtract);
+            productsCocinaRepo.save(productStock);
+        }
+
+        // Crear relaciones StockDate del nuevo día
+        for (ProductsCocinaCentral product : newStockMap.values()) {
+            StockDateCocinaCentral relation = new StockDateCocinaCentral();
+            relation.setProduct(product);
+            relation.setDate(today);
+            stockDateRepo.save(relation);
+        }
+
+        System.out.println("NUEVO STOCK GENERADO PARA FECHA: " + today);
+    }
+
 }
