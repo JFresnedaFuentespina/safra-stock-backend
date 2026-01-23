@@ -77,6 +77,7 @@ public class SpringSecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/safra-stock/users/get-users-in-local").permitAll()
                 .requestMatchers(HttpMethod.POST, "/safra-stock/users/register").permitAll()
                 .requestMatchers(HttpMethod.GET, "/safra-stock/orders").permitAll()
+                .requestMatchers(HttpMethod.GET, "/safra-stock/orders/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/safra-stock/orders").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/safra-stock/orders").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/safra-stock/orders/disable/*").permitAll()

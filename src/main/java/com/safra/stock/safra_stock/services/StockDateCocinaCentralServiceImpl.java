@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.safra.stock.safra_stock.entities.CocinaCentralStockRequest;
 import com.safra.stock.safra_stock.entities.Order;
 import com.safra.stock.safra_stock.entities.OrderShipment;
+import com.safra.stock.safra_stock.entities.OrderShipmentItemDTO;
 import com.safra.stock.safra_stock.entities.OrderShipmentProduct;
 import com.safra.stock.safra_stock.entities.Product;
 import com.safra.stock.safra_stock.entities.ProductItem;
@@ -117,7 +118,7 @@ public class StockDateCocinaCentralServiceImpl implements StockDateCocinaCentral
 
     @Override
     @Transactional
-    public void updateLastStockWithProducts(List<ProductItem> products) {
+    public void updateLastStockWithProducts(List<OrderShipmentItemDTO> products) {
 
         // 1. Obtener el último registro de stockDate
         StockDateCocinaCentral lastStockEntry = stockDateRepo.findTopByOrderByDateDesc();
@@ -138,7 +139,7 @@ public class StockDateCocinaCentralServiceImpl implements StockDateCocinaCentral
                         s -> s.getProduct().getProduct().getName().trim().toLowerCase()));
 
         // Procesar productos recibidos
-        for (ProductItem item : products) {
+        for (OrderShipmentItemDTO item : products) {
 
             String key = item.getProductName().trim().toLowerCase();
             int quantityToSubtract = item.getQuantity();
@@ -182,23 +183,32 @@ public class StockDateCocinaCentralServiceImpl implements StockDateCocinaCentral
 
     @Override
     @Transactional
-    public void generateNewStockFromLast(List<ProductItem> products) {
-        // Obtener último stock
+    public void generateNewStockFromLast(List<OrderShipmentItemDTO> products) {
+
+        // 1. Último stock
         StockDateCocinaCentral lastStockEntry = stockDateRepo.findTopByOrderByDateDesc();
         if (lastStockEntry == null) {
             throw new RuntimeException("No existe stock previo");
         }
 
-        LocalDate lasDate = lastStockEntry.getDate();
-        List<StockDateCocinaCentral> lastStockList = stockDateRepo.findByDate(lasDate);
+        LocalDate lastDate = lastStockEntry.getDate();
+        List<StockDateCocinaCentral> lastStockList = stockDateRepo.findByDate(lastDate);
 
         LocalDate today = LocalDate.now();
 
-        // Clonar productos del último stock
-        Map<String, ProductsCocinaCentral> newStockMap = lastStockList.stream()
+        // 2. DEDUPLICAR por producto (CLAVE IMPORTANTE)
+        Map<Integer, ProductsCocinaCentral> stockPorProducto = lastStockList.stream()
                 .map(StockDateCocinaCentral::getProduct)
                 .collect(Collectors.toMap(
-                        p -> p.getProduct().getName().trim().toLowerCase(),
+                        p -> p.getProduct().getId(),
+                        p -> p,
+                        (a, b) -> a.getStock() >= b.getStock() ? a : b));
+
+        // 3. Clonar stock
+        Map<Integer, ProductsCocinaCentral> newStockMap = stockPorProducto.values()
+                .stream()
+                .collect(Collectors.toMap(
+                        p -> p.getProduct().getId(),
                         p -> {
                             ProductsCocinaCentral copy = new ProductsCocinaCentral();
                             copy.setLocalName(p.getLocalName());
@@ -207,24 +217,28 @@ public class StockDateCocinaCentralServiceImpl implements StockDateCocinaCentral
                             copy.setDate(today.atStartOfDay());
                             return productsCocinaRepo.save(copy);
                         }));
-        // Aplicar restas sobre el nuevo stock
-        for (ProductItem item : products) {
-            String key = item.getProductName().trim().toLowerCase();
-            int quantityToSubtract = item.getQuantity();
 
-            if (!newStockMap.containsKey(key))
+        // 4. Aplicar restas
+        for (OrderShipmentItemDTO item : products) {
+
+            Product product = productRepository.findByName(item.getProductName())
+                    .orElse(null);
+
+            if (product == null)
                 continue;
 
-            ProductsCocinaCentral productStock = newStockMap.get(key);
+            ProductsCocinaCentral productStock = newStockMap.get(product.getId());
+            if (productStock == null)
+                continue;
 
             int available = productStock.getStock();
-            int subtract = Math.min(available, quantityToSubtract);
+            int subtract = Math.min(available, item.getQuantity());
 
             productStock.setStock(available - subtract);
             productsCocinaRepo.save(productStock);
         }
 
-        // Crear relaciones StockDate del nuevo día
+        // 5. Crear relaciones StockDate
         for (ProductsCocinaCentral product : newStockMap.values()) {
             StockDateCocinaCentral relation = new StockDateCocinaCentral();
             relation.setProduct(product);
@@ -236,7 +250,7 @@ public class StockDateCocinaCentralServiceImpl implements StockDateCocinaCentral
     }
 
     @Transactional
-    public void registerOrderShipment(List<ProductItem> items) {
+    public void registerOrderShipment(List<OrderShipmentItemDTO> items) {
 
         if (items.isEmpty())
             return;

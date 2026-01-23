@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.safra.stock.safra_stock.entities.CocinaCentralStockRequest;
+import com.safra.stock.safra_stock.entities.OrderShipmentItemDTO;
 import com.safra.stock.safra_stock.entities.ProductItem;
 import com.safra.stock.safra_stock.entities.ProductStockCocinaDTO;
 import com.safra.stock.safra_stock.entities.ProductsCocinaCentral;
@@ -159,43 +160,65 @@ public class CocinaCentralController {
     }
 
     @PutMapping("/stock/update-last")
-    public ResponseEntity<?> editLastStock(@RequestBody List<ProductItem> request) {
+    public ResponseEntity<?> editLastStock(@RequestBody List<OrderShipmentItemDTO> request) {
         try {
-            System.out.println("ACTUALIZACIÓN ÚLTIMO STOCK + REGISTRO ENVÍO");
+            System.out.println("ACTUALIZACIÓN ÚLTIMO STOCK");
 
-            // 1️⃣ Actualizar stock
+            // Actualizar stock
             stockDateService.updateLastStockWithProducts(request);
 
-            // 2️⃣ Registrar envío
-            stockDateService.registerOrderShipment(request);
+            // Registrar envío SOLO si hay pedido
+            request.forEach(item -> {
+                System.out.println("ITEM RAW: " + item);
+                System.out.println("ORDER ID RAW: " + item.getOrderId());
+            });
+
+            if (hasValidOrderId(request)) {
+                System.out.println("Registrando envío de pedido");
+                stockDateService.registerOrderShipment(request);
+            }
 
             return ResponseEntity.ok().build();
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al modificar stock y registrar envío: " + e.getMessage());
+                    .body("Error al modificar stock: " + e.getMessage());
         }
     }
 
     @PostMapping("/stock/generate-with-last")
-    public ResponseEntity<?> generateWithLast(@RequestBody List<ProductItem> request) {
+    public ResponseEntity<?> generateWithLast(@RequestBody List<OrderShipmentItemDTO> request) {
         try {
-            System.out.println("GENERANDO NUEVO STOCK + REGISTRO ENVÍO");
+            System.out.println("GENERANDO NUEVO STOCK");
 
-            // 1️⃣ Generar stock
+            // Generar stock
             stockDateService.generateNewStockFromLast(request);
 
-            // 2️⃣ Registrar envío
-            stockDateService.registerOrderShipment(request);
+            // Registrar envío SOLO si hay pedido
+            request.forEach(item -> {
+                System.out.println("ITEM RAW: " + item);
+                System.out.println("ORDER ID RAW: " + item.getOrderId());
+            });
+
+            if (hasValidOrderId(request)) {
+                System.out.println("Registrando envío de pedido");
+                stockDateService.registerOrderShipment(request);
+            }
 
             return ResponseEntity.ok().build();
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al generar stock y registrar envío: " + e.getMessage());
+                    .body("Error al generar stock: " + e.getMessage());
         }
     }
 
+    private boolean hasValidOrderId(List<OrderShipmentItemDTO> items) {
+        return items != null
+                && !items.isEmpty()
+                && items.stream().anyMatch(
+                        i -> i.getOrderId() != null && i.getOrderId() > 0);
+    }
 }

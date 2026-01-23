@@ -2,23 +2,20 @@ package com.safra.stock.safra_stock.entities;
 
 import java.time.LocalDate;
 
-public class ProductItem {
-    private String localName;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class OrderShipmentItemDTO {
     private String productName;
     private int quantity;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
+
+    @JsonProperty("orderId")
     private Integer orderId;
 
-    // Getters y setters
-
-    public String getLocalName() {
-        return localName;
-    }
-
-    public void setLocalName(String localName) {
-        this.localName = localName;
-    }
-
+    // GETTERS Y SETTERS PÚBLICOS
     public String getProductName() {
         return productName;
     }
@@ -43,17 +40,18 @@ public class ProductItem {
         this.date = date;
     }
 
-    @Override
-    public String toString() {
-        return "ProductItem [localName=" + localName + ", productName=" + productName + ", quantity=" + quantity
-                + ", date=" + date + ", orderId=" + orderId + "]";
-    }
-
     public Integer getOrderId() {
         return orderId;
     }
 
     public void setOrderId(Integer orderId) {
+        System.out.println("SETTER orderId: " + orderId); // <- debug
         this.orderId = orderId;
+    }
+
+    @Override
+    public String toString() {
+        return "OrderShipmentItemDTO [productName=" + productName + ", quantity=" + quantity + ", date=" + date
+                + ", orderId=" + orderId + "]";
     }
 }

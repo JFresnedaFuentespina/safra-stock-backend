@@ -26,6 +26,8 @@ import com.safra.stock.safra_stock.entities.Local;
 import com.safra.stock.safra_stock.entities.Order;
 import com.safra.stock.safra_stock.entities.OrderDTO;
 import com.safra.stock.safra_stock.entities.OrderMapper;
+import com.safra.stock.safra_stock.entities.OrderShipmentProduct;
+import com.safra.stock.safra_stock.entities.OrderShipmentProductDTO;
 import com.safra.stock.safra_stock.entities.Product;
 import com.safra.stock.safra_stock.entities.ProductInOrder;
 import com.safra.stock.safra_stock.entities.ProductInOrderKey;
@@ -36,6 +38,7 @@ import com.safra.stock.safra_stock.repositories.LocalRepository;
 import com.safra.stock.safra_stock.repositories.ProductRepository;
 import com.safra.stock.safra_stock.services.EmailService;
 import com.safra.stock.safra_stock.services.OrderService;
+import com.safra.stock.safra_stock.services.OrderShipmentProductService;
 
 import jakarta.validation.Valid;
 
@@ -57,6 +60,9 @@ public class OrderController {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private OrderShipmentProductService orderShipmentProductService;
 
     @GetMapping()
     public List<OrderDTO> list() {
@@ -250,15 +256,27 @@ public class OrderController {
         return ResponseEntity.ok().body(service.changeActive(order, true));
     }
 
-    // @GetMapping("/get-pending-products/{id}")
-    // public ResponseEntity<?> getPendingProductsInOrder(@PathVariable int id) {
-    //     Optional<Order> orderOptional = service.findById(id);
-    //     if(!orderOptional.isPresent()){
-    //         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    //     }
-    //     Order order = orderOptional.get();
+    @GetMapping("/{orderId}/shipments")
+    public List<OrderShipmentProductDTO> getOrderShipments(
+            @PathVariable Integer orderId) {
 
-    // }
+        List<OrderShipmentProduct> products = orderShipmentProductService.findByOrderId(orderId);
+
+        System.out.println("SHIPMENTS ENCONTRADOS: " + products.size());
+
+        products.forEach(p -> {
+            System.out.println(
+                    "Producto: " + p.getProduct().getName() +
+                            " | Qty: " + p.getQuantity() +
+                            " | Shipment ID: " + p.getShipment().getId());
+        });
+
+        return products.stream()
+                .map(p -> new OrderShipmentProductDTO(
+                        p.getProduct().getName(),
+                        p.getQuantity()))
+                .collect(Collectors.toList());
+    }
 
     public ResponseEntity<?> validation(BindingResult result) {
         Map<String, String> errors = new HashMap<>();
