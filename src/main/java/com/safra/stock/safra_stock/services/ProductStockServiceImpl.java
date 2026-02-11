@@ -50,4 +50,10 @@ public class ProductStockServiceImpl implements ProductStockService {
         stockDateRepository.save(stockDate);
         return savedStock;
     }
+
+    @Override
+    public List<ProductStockDate> findByLocalAndDate(String localName, LocalDate date) {
+        return stockDateRepository
+                .findByProductStock_LocalNameAndDate(localName, date);
+    }
 }

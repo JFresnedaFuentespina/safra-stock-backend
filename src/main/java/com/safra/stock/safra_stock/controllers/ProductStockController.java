@@ -1,10 +1,12 @@
 package com.safra.stock.safra_stock.controllers;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -18,6 +20,7 @@ import com.safra.stock.safra_stock.services.ProductStockService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -31,6 +34,14 @@ public class ProductStockController {
     @GetMapping()
     public List<ProductStockDate> list() {
         return service.findAll();
+    }
+
+    @GetMapping("/{localName}/{date}")
+    public List<ProductStockDate> getStock(
+            @PathVariable String localName,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        System.out.println("INTENTANDO ACCEDER AL STOCK DE " + localName + " DEL DIA " + date);
+        return service.findByLocalAndDate(localName, date);
     }
 
     @PostMapping()

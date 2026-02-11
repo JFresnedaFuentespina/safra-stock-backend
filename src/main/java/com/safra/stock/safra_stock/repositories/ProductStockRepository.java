@@ -9,7 +9,7 @@ import com.safra.stock.safra_stock.entities.ProductStock;
 
 public interface ProductStockRepository extends CrudRepository<ProductStock, Integer> {
 
-    Iterable<ProductStock> findById(int id);
+    Optional<ProductStock> findById(int id);
 
     Iterable<ProductStock> findByLocalName(String localName);
 
