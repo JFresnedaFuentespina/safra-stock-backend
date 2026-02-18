@@ -3,7 +3,6 @@ package com.safra.stock.safra_stock.services;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.safra.stock.safra_stock.entities.OrderShipmentProduct;
@@ -15,7 +14,6 @@ public class OrderShipmentProductServiceImpl implements OrderShipmentProductServ
 
     private final OrderShipmentProductRepository shipmentProductRepository;
 
-    @Autowired
     public OrderShipmentProductServiceImpl(OrderShipmentProductRepository shipmentProductRepository) {
         this.shipmentProductRepository = shipmentProductRepository;
     }

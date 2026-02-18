@@ -16,10 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.safra.stock.safra_stock.entities.CocinaCentralStockRequest;
 import com.safra.stock.safra_stock.entities.OrderShipmentItemDTO;
-import com.safra.stock.safra_stock.entities.ProductItem;
 import com.safra.stock.safra_stock.entities.ProductStockCocinaDTO;
 import com.safra.stock.safra_stock.entities.ProductsCocinaCentral;
 import com.safra.stock.safra_stock.entities.StockCocinaGroupedDTO;
