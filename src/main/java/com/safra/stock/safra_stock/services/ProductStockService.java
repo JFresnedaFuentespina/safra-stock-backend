@@ -11,5 +11,7 @@ public interface ProductStockService {
 
     ProductStock save(ProductStock localStock);
 
+    ProductStock edit(ProductStock localStock);
+
     List<ProductStockDate> findByLocalAndDate(String localName, LocalDate date);
 }

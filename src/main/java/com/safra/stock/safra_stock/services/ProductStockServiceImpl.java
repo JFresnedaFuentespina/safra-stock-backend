@@ -52,6 +52,26 @@ public class ProductStockServiceImpl implements ProductStockService {
     }
 
     @Override
+    public ProductStock edit(ProductStock localStock) {
+
+        Optional<ProductStock> existingStock = repository
+                .findByProductNameAndLocalNameAndDate(
+                        localStock.getProductName(),
+                        localStock.getLocalName(),
+                        localStock.getDate());
+
+        if (existingStock.isEmpty()) {
+            throw new RuntimeException("No se encontró el stock a editar.");
+        }
+        // Permite editar la fecha del producto y su cantidad
+        ProductStock stockToUpdate = existingStock.get();
+        stockToUpdate.setStock(localStock.getStock());
+        stockToUpdate.setDate(localStock.getDate());
+
+        return repository.save(stockToUpdate);
+    }
+
+    @Override
     public List<ProductStockDate> findByLocalAndDate(String localName, LocalDate date) {
         return stockDateRepository
                 .findByProductStock_LocalNameAndDate(localName, date);
