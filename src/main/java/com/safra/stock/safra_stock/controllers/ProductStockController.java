@@ -63,6 +63,14 @@ public class ProductStockController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.edit(stock));
     }
 
+    @PutMapping("/update-batch")
+    public ResponseEntity<?> updateBatch(@RequestBody List<ProductStock> stockList) {
+        List<ProductStock> updated = stockList.stream()
+                .map(service::edit)
+                .toList();
+        return ResponseEntity.ok(updated);
+    }
+
     @PostMapping("/batch")
     public ResponseEntity<?> createBatch(@RequestBody List<@Valid ProductStock> stockList) {
         List<ProductStock> saved = stockList.stream()
